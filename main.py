@@ -45,16 +45,23 @@ def main(argv):
             name = os.path.splitext(os.path.split(path)[1])[0]
             images[name] = {"width": width, "height": height}
 
+    trainval_file = open(os.path.join(output_folder, "trainval.txt"), 'w')
+
     for dir_name, sub_dir_list, file_list in os.walk(input_folder):
         for file_name in fnmatch.filter(file_list, "*.xml"):
             path = os.path.join(dir_name, file_name)
             name = os.path.splitext(os.path.split(path)[1])[0]
             if images.get(name) is None:
                 continue
+
             pascal_voc = process_file(path, images)
-            pascal_voc_name = os.path.join(output_folder, file_name)
+            if pascal_voc is None:
+                continue
+
             print(pascal_voc_name)
-            pascal_voc.write(open(pascal_voc_name, 'w+'), encoding='unicode')
+            pascal_voc_name = os.path.join(output_folder, "xmls", file_name)
+            pascal_voc.write(open(pascal_voc_name, 'w'), encoding='unicode')
+            trainval_file.write(name+"\n")
 
 
 def process_file(path, images):
@@ -75,6 +82,10 @@ def process_file(path, images):
     marmot_tree = ET.parse(path)
     marmot_root = marmot_tree.getroot()
 
+    tables = marmot_root.findall("*/Composites/*[@Label='Table']")
+    if not tables:
+        return None
+
     for table in marmot_root.findall("*/Composites/*[@Label='Table']"):
         obj = ET.SubElement(annotation, "object")
         obj_name = ET.SubElement(obj, "name")
@@ -94,6 +105,7 @@ def process_file(path, images):
         ymax.text = str(bbox_array[1])
 
     return tree
+
 
 def hex_to_double(s):
     return unpack(">d", binascii.unhexlify(s))[0]
