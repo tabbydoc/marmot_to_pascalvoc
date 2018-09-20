@@ -6,6 +6,7 @@ from xml.etree.ElementTree import ElementTree
 import xml.etree.ElementTree as ET
 from struct import unpack
 import binascii
+import scipy
 import struct
 import shutil
 from PIL import Image
@@ -13,7 +14,7 @@ from PIL import Image
 
 def main(argv):
     input_folder = ''
-    output_folder = ''
+    output_folder = 'out'
     try:
         opts, args = getopt.getopt(argv, "hi:o:", ["input_folder=", "output_folder="])
     except getopt.GetoptError:
@@ -40,6 +41,7 @@ def main(argv):
     if os.path.exists(annotations_path):
         shutil.rmtree(annotations_path)
 
+    os.makedirs(images_path)
     os.makedirs(annotations_path)
     os.makedirs(xmls_path)
 
