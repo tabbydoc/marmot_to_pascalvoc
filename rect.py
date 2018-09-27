@@ -15,10 +15,10 @@ class Rect:
         @remark If x0 is greater than x1, they are swapped to build the rect.
         So for the y's.
         """
-        self._x0 = min(x0, x1)
-        self._y0 = min(y0, y1)
-        self._x1 = max(x0, x1)
-        self._y1 = max(y0, y1)
+        self._x0 = min(x0, x1) * 1.33
+        self._y0 = min(y0, y1) * 1.33
+        self._x1 = max(x0, x1) * 1.33
+        self._y1 = max(y0, y1) * 1.33
 
     def x0(self):
         return self._x0

@@ -6,10 +6,8 @@ from xml.etree.ElementTree import ElementTree
 import xml.etree.ElementTree as ET
 from struct import unpack
 import binascii
-import scipy
-import struct
 import shutil
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image
 from rect import Rect
 
 
@@ -60,11 +58,6 @@ def main(argv):
             with Image.open(path) as img:
                 width, height = img.size
                 img.save(save_path)
-            #with open(path, 'rb') as bmp:
-            #    bmp.seek(18)
-            #    width = struct.unpack("I", bmp.read(4))[0]
-            #    height = struct.unpack("I", bmp.read(4))[0]
-            #    name = os.path.splitext(os.path.split(path)[1])[0]
                 images[name] = {"width": width, "height": height}
 
     trainval_file = open(os.path.join(annotations_path, "trainval.txt"), 'w')
@@ -86,7 +79,7 @@ def main(argv):
             trainval_file.write(name + "\n")
 
 
-def process_file(path, images_path, images):
+def process_file(path, images):
     annotation = ET.Element("annotation")
     tree = ElementTree(annotation)
     filename = ET.SubElement(annotation, "filename")
@@ -104,7 +97,8 @@ def process_file(path, images_path, images):
     marmot_tree = ET.parse(path)
     marmot_root = marmot_tree.getroot()
 
-    tables = marmot_root.findall("*/Composites/*[@Label='Table']")
+    tables = marmot_root.findall("*/Composites/*[@Label='TableBody']")
+
     if not tables:
         return None
 
@@ -115,15 +109,17 @@ def process_file(path, images_path, images):
         bndbox = ET.SubElement(obj, "bndbox")
         hexs = table.get("BBox").split(" ")
         bbox_array = [hex_to_double(x) for x in hexs]
-        re = Rect(bbox_array[0] * 1.33, bbox_array[3] * 1.33, bbox_array[2] * 1.33, bbox_array[1] * 1.33)
+        re = Rect(bbox_array[0], bbox_array[3], bbox_array[2], bbox_array[1])
         xmin = ET.SubElement(bndbox, "xmin")
         xmin.text = str(re.x0())
         ymin = ET.SubElement(bndbox, "ymin")
-        ymin.text = str(re.y0())
+        fymin = images[name].get("height") - re.y1()
+        ymin.text = str(fymin)
         xmax = ET.SubElement(bndbox, "xmax")
         xmax.text = str(re.x1())
+        fymax = images[name].get("height") - re.y0()
         ymax = ET.SubElement(bndbox, "ymax")
-        ymax.text = str(re.y1())
+        ymax.text = str(fymax)
 
     return tree
 
