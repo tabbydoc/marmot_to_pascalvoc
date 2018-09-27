@@ -9,7 +9,8 @@ import binascii
 import scipy
 import struct
 import shutil
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
+from rect import Rect
 
 
 def main(argv):
@@ -40,6 +41,10 @@ def main(argv):
 
     if os.path.exists(annotations_path):
         shutil.rmtree(annotations_path)
+    if os.path.exists(images_path):
+        shutil.rmtree(images_path)
+    if os.path.exists(xmls_path):
+        shutil.rmtree(xmls_path)
 
     os.makedirs(images_path)
     os.makedirs(annotations_path)
@@ -71,7 +76,7 @@ def main(argv):
             if images.get(name) is None:
                 continue
 
-            pascal_voc = process_file(path, images)
+            pascal_voc = process_file(path, images_path, images)
             if pascal_voc is None:
                 continue
 
@@ -81,7 +86,7 @@ def main(argv):
             trainval_file.write(name + "\n")
 
 
-def process_file(path, images):
+def process_file(path, images_path, images):
     annotation = ET.Element("annotation")
     tree = ElementTree(annotation)
     filename = ET.SubElement(annotation, "filename")
@@ -110,14 +115,23 @@ def process_file(path, images):
         bndbox = ET.SubElement(obj, "bndbox")
         hexs = table.get("BBox").split(" ")
         bbox_array = [hex_to_double(x) for x in hexs]
+        re = Rect(bbox_array[0] * 1.33, bbox_array[3] * 1.33, bbox_array[2] * 1.33, bbox_array[1] * 1.33)
         xmin = ET.SubElement(bndbox, "xmin")
-        xmin.text = str(bbox_array[0])
+        xmin.text = str(re.x0())
         ymin = ET.SubElement(bndbox, "ymin")
-        ymin.text = str(bbox_array[3])
+        ymin.text = str(re.y0())
         xmax = ET.SubElement(bndbox, "xmax")
-        xmax.text = str(bbox_array[2])
+        xmax.text = str(re.x1())
         ymax = ET.SubElement(bndbox, "ymax")
-        ymax.text = str(bbox_array[1])
+        ymax.text = str(re.y1())
+        im = Image.open(images_path + "/" + name + ".jpeg")
+        #draw = ImageDraw.Draw(im)
+        #draw.rectangle(((re.x0(), images[name].get("height") - re.y0()), (re.x1(), images[name].get("height") - re.y1())), outline="#ff0000")
+        #name = os.path.splitext(os.path.split(path)[1])[0]
+        #save_path = os.path.join(images_path, "bb" + name + ".jpeg")
+        #im.save(save_path)
+        #del draw
+        #del im
 
     return tree
 
