@@ -36,7 +36,7 @@ def main(argv):
         raise Exception(input_folder, "- It is not a folder")
 
     annotations_path = os.path.join(output_folder, "annotations")
-    xmls_path = os.path.join(annotations_path, "xmlns")
+    xmls_path = os.path.join(annotations_path, "xmls")
     images_path = os.path.join(output_folder, "images")
 
     if os.path.exists(annotations_path):
@@ -124,14 +124,6 @@ def process_file(path, images_path, images):
         xmax.text = str(re.x1())
         ymax = ET.SubElement(bndbox, "ymax")
         ymax.text = str(re.y1())
-        im = Image.open(images_path + "/" + name + ".jpeg")
-        #draw = ImageDraw.Draw(im)
-        #draw.rectangle(((re.x0(), images[name].get("height") - re.y0()), (re.x1(), images[name].get("height") - re.y1())), outline="#ff0000")
-        #name = os.path.splitext(os.path.split(path)[1])[0]
-        #save_path = os.path.join(images_path, "bb" + name + ".jpeg")
-        #im.save(save_path)
-        #del draw
-        #del im
 
     return tree
 
