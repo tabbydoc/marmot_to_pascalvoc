@@ -98,7 +98,7 @@ def process_file(path, images):
     marmot_root = marmot_tree.getroot()
 
     tables = marmot_root.findall("*/Composites/*[@Label='TableBody']")
-
+    
     if not tables:
         return None
 
