@@ -69,7 +69,7 @@ def main(argv):
             if images.get(name) is None:
                 continue
 
-            pascal_voc = process_file(path, images_path, images)
+            pascal_voc = process_file(path, images)
             if pascal_voc is None:
                 continue
 
